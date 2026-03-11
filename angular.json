@@ -2,7 +2,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "harpenden-arrows-handicap-timer": {
+    "race-timer": {
       "projectType": "application",
       "root": "",
       "sourceRoot": "src",
@@ -11,7 +11,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/harpenden-arrows-handicap-timer",
+            "outputPath": "dist/race-timer",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -47,18 +47,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "harpenden-arrows-handicap-timer:build"
+            "browserTarget": "race-timer:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "harpenden-arrows-handicap-timer:build:production"
+              "browserTarget": "race-timer:build:production"
             }
           }
         }
       }
     }
   },
-  "defaultProject": "harpenden-arrows-handicap-timer",
+  "defaultProject": "race-timer",
   "cli": {
     "analytics": false
   }
