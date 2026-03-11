@@ -1,6 +1,6 @@
 {
   "name": "harpenden-arrows-handicap-timer",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A countdown timer application for Harpenden Arrows with runner management and announcements.",
   "main": "electron/main.js",
   "scripts": {
