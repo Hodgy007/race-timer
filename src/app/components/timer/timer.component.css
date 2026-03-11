@@ -55,6 +55,8 @@ h1 {
     .timer-container {
         padding: 15px 10px;
         margin: 10px;
+        box-sizing: border-box;
+        width: calc(100vw - 20px);
     }
 
     .timer-display {
