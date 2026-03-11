@@ -14,7 +14,8 @@
     "deploy:ghpages": "npm run build:ghpages && npx angular-cli-ghpages --dir=dist/harpenden-arrows-handicap-timer",
     "build:electron": "ng build --base-href ./",
     "electron:start": "npm run build:electron && electron .",
-    "electron:dist": "npm run build:electron && npx electron-packager . \"Harpenden Arrows Race Timer\" --platform=win32 --arch=x64 --out=release --overwrite --ignore=node_modules --ignore=src --ignore=.angular --ignore=release && powershell -Command \"Compress-Archive -Path 'release/Harpenden Arrows Race Timer-win32-x64' -DestinationPath 'release/HarpendenArrowsRaceTimer.zip' -Force\""
+    "electron:dist": "npm run build:electron && npx electron-packager . \"Harpenden Arrows Race Timer\" --platform=win32 --arch=x64 --out=release --overwrite --ignore=node_modules --ignore=src --ignore=.angular --ignore=release && powershell -Command \"Compress-Archive -Path 'release/Harpenden Arrows Race Timer-win32-x64' -DestinationPath 'release/HarpendenArrowsRaceTimer.zip' -Force\"",
+    "release": "node scripts/release.js"
   },
   "private": true,
   "dependencies": {
