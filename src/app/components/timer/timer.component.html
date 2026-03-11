@@ -1,6 +1,5 @@
 <div class="timer-container">
-  <h1>Harpenden Arrows Race Timer</h1>
-  <div class="timer-display" (dblclick)="startEditStartTime()" [title]="isRunning ? '' : 'Double-click to change start time'">
+<div class="timer-display" (dblclick)="startEditStartTime()" [title]="isRunning ? '' : 'Double-click to change start time'">
     <span *ngIf="!editingStartTime">{{ formatTime(remainingTime) }}</span>
     <input *ngIf="editingStartTime" class="start-time-input"
            type="text" [(ngModel)]="editingStartTimeValue" placeholder="mm:ss"

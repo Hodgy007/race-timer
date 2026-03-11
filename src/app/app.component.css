@@ -1,1 +1,16 @@
 /* App component styles */
+
+.site-header {
+    background-color: #CC0000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.site-logo {
+    height: 60px;
+    display: block;
+}
