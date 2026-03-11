@@ -1,8 +1,0 @@
-# This file is used by the build system to adjust CSS and JS output to support the specified browsers below.
-# For additional information regarding the format and rule options, please see:
-# https://github.com/browserslist/browserslist#queries
-
-# For the best browser support in the polyfilled build, the below line is recommended.
-last 2 versions
-# For the best browser support in the modern build, the below line is recommended.
-# last 2 versions and not dead
