@@ -47,7 +47,7 @@
                    class="cell-edit-input" type="text" [(ngModel)]="editingValue" placeholder="mm:ss"
                    (blur)="saveCellEdit()" (keydown.enter)="saveCellEdit()" (keydown.escape)="cancelCellEdit()" />
           </td>
-          <td>{{ getTimeDifferential(i) }}</td>
+          <td>{{ gapValues[i] }}</td>
           <td>{{ formatTime(getCountdownToTime(runner.expectedTime)) }}</td>
           <td class="editable-cell" (dblclick)="startCellEdit(i, 'racePosition')">
             <span *ngIf="!(editingCell?.index === i && editingCell?.field === 'racePosition')">{{ runner.racePosition ?? '' }}</span>

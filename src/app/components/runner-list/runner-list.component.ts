@@ -16,6 +16,7 @@ export class RunnerListComponent implements OnInit, OnChanges {
   expectedTime: string = '';
   runnerAlerts: { runnerName: string; countdown: number; isGo: boolean; id: string }[] = [];
   
+  gapValues: string[] = [];
   editingCell: { index: number; field: 'name' | 'expectedTime' | 'racePosition' } | null = null;
   editingValue: string = '';
   private alertIntervals: any[] = [];
@@ -69,6 +70,7 @@ export class RunnerListComponent implements OnInit, OnChanges {
       if (aPos !== bPos) return aPos - bPos;
       return b.expectedTime - a.expectedTime;
     });
+    this.computeGapValues();
   }
 
   removeRunner(runner: any): void {
@@ -152,18 +154,17 @@ export class RunnerListComponent implements OnInit, OnChanges {
     return sign + this.formatTime(Math.abs(diff));
   }
 
-  getTimeDifferential(index: number): string {
-    if (index === 0) return '-';
-    const prevRunner = this.runners[index - 1];
-    const thisRunner = this.runners[index];
-    const staticDiff = prevRunner.expectedTime - thisRunner.expectedTime;
-
-    if (this.remainingTime <= prevRunner.expectedTime) {
-      const countdown = Math.max(0, this.remainingTime - thisRunner.expectedTime);
-      return '+' + this.formatTime(countdown);
-    }
-
-    return '+' + this.formatTime(staticDiff);
+  private computeGapValues(): void {
+    this.gapValues = this.runners.map((runner, i) => {
+      if (i === 0) return '-';
+      const prevRunner = this.runners[i - 1];
+      const staticDiff = prevRunner.expectedTime - runner.expectedTime;
+      if (this.remainingTime <= prevRunner.expectedTime) {
+        const countdown = Math.max(0, this.remainingTime - runner.expectedTime);
+        return '+' + this.formatTime(countdown);
+      }
+      return '+' + this.formatTime(staticDiff);
+    });
   }
 
   getCountdownToTime(expectedTime: number): number {
@@ -180,6 +181,7 @@ export class RunnerListComponent implements OnInit, OnChanges {
     this.checkForAlerts();
     this.mapCheckInsToRunners();
     this.sortRunners();
+    this.computeGapValues();
   }
 
   private mapCheckInsToRunners(): void {
@@ -282,7 +284,7 @@ export class RunnerListComponent implements OnInit, OnChanges {
     const rows = this.runners.map((runner, i) => [
       runner.name,
       this.formatTime(runner.expectedTime),
-      this.getTimeDifferential(i),
+      this.gapValues[i] ?? '-',
       this.formatTime(this.getCountdownToTime(runner.expectedTime)),
       runner.racePosition ?? '',
       runner.finishTime ?? '',
