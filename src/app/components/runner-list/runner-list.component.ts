@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RunnerStorageService, StoredRunner } from '../../services/runner-storage.service';
 
 @Component({
@@ -24,7 +24,7 @@ export class RunnerListComponent implements OnInit, OnChanges {
   showBulkImport: boolean = false;
   bulkRunnerData: string = '';
 
-  constructor(private storageService: RunnerStorageService) {}
+  constructor(private storageService: RunnerStorageService, private cdr: ChangeDetectorRef) {}
 
   addRunner(): void {
     const timeParts = this.expectedTime.split(':');
@@ -182,6 +182,7 @@ export class RunnerListComponent implements OnInit, OnChanges {
     this.mapCheckInsToRunners();
     this.sortRunners();
     this.computeGapValues();
+    this.cdr.markForCheck();
   }
 
   private mapCheckInsToRunners(): void {
