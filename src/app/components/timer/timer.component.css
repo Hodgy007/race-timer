@@ -1,5 +1,9 @@
 /* ── Timer Component ── */
 
+:host {
+  display: block;
+}
+
 .timer-container {
   padding: 36px 24px 16px;
   display: flex;
