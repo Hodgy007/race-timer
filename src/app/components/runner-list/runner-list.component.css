@@ -1,5 +1,10 @@
 /* ── Runner List Component ── */
 
+:host {
+  display: block;
+  width: 100%;
+}
+
 .runner-layout {
   display: flex;
   gap: 24px;
