@@ -12,5 +12,6 @@ export class AppComponent {
   toggleLightMode(): void {
     this.lightMode = !this.lightMode;
     document.body.classList.toggle('light-mode', this.lightMode);
+    document.documentElement.classList.toggle('light-mode', this.lightMode);
   }
 }

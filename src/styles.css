@@ -28,6 +28,7 @@
 html, body {
   margin: 0;
   padding: 0;
+  min-height: 100vh;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
@@ -142,6 +143,7 @@ button:disabled {
 }
 
 /* ── Light mode overrides ── */
+html.light-mode,
 body.light-mode {
   --bg:         #ffffff;
   --surface:    #f5f5f5;
