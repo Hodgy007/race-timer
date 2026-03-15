@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harpenden Arrows Handicap Race Timer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #CC0000; /* Harpenden Arrows Red */
+            --primary-dark-color: #A00000;
+            --text-color: #333;
+            --background-color: #f4f7f6;
+            --card-background: #ffffff;
+            --border-color: #e0e0e0;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --purple-btn-color: #6f42c1;
+            --font-family-body: 'Montserrat', sans-serif;
+            --font-family-display: 'Orbitron', monospace;
+            --gap-s: 8px;
+            --gap-m: 16px;
+            --gap-l: 24px;
+            --border-radius: 8px;
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --text-color: #e0e0e0;
+            --background-color: #1a1a1a;
+            --card-background: #2a2a2a;
+            --border-color: #444;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family-body);
+            color: var(--text-color);
+            background-color: var(--background-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #app {
+            max-width: 1200px;
+            margin: var(--gap-l) auto;
+            padding: 0 var(--gap-m);
+            display: grid;
+            gap: var(--gap-l);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--card-background);
+            padding: var(--gap-m) var(--gap-l);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px var(--shadow-color);
+            flex-wrap: wrap;
+        }
+
+        #logo {
+            height: 40px; /* Adjust as needed */
+            width: auto;
+            margin-right: var(--gap-m);
+        }
+
+        header h1 {
+            font-family: var(--font-family-display);
+            font-size: 1.8em;
+            color: var(--primary-color);
+            flex-grow: 1;
+            text-align: center;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--gap-m);
+        }
+
+        #runner-count {
+            font-weight: 600;
+            color: var(--info-color);
+        }
+
+        #dark-mode-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: var(--gap-s);
+            border-radius: var(--border-radius);
+            transition: background-color 0.2s;
+        }
+        
+        #dark-mode-toggle:hover {
+            background-color: var(--border-color);
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--gap-l);
+        }
+
+        /* Card styles */
+        .card {
+            background-color: var(--card-background);
+            padding: var(--gap-l);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+
+        .card h2 {
+            color: var(--primary-color);
+            margin-bottom: var(--gap-m);
+            font-size: 1.5em;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: var(--gap-s);
+        }
+
+        /* Timer Section */
+        #timer-section {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--gap-l) 0;
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+
+        #timer-display {
+            font-family: var(--font-family-display);
+            font-size: 6em;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: var(--gap-l);
+            text-shadow: 2px 2px 4px var(--shadow-color);
+            white-space: nowrap;
+        }
+
+        .timer-controls button,
+        .card button,
+        form button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: var(--gap-s) var(--gap-m);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background-color 0.2s ease, transform 0.1s;
+            margin: var(--gap-s);
+        }
+
+        .timer-controls button:hover,
+        .card button:hover,
+        form button:hover {
+            background-color: var(--primary-dark-color);
+            transform: translateY(-2px);
+        }
+
+        .timer-controls button:active,
+        .card button:active,
+        form button:active {
+            transform: translateY(0);
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: var(--gap-m);
+        }
+
+        /* Alert Panel */
+        #alert-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            font-family: var(--font-family-display);
+            color: white;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transition: background-color 0.3s ease-in-out;
+            pointer-events: none; /* Allow clicks to pass through */
+        }
+        #alert-panel.hidden {
+            display: none;
+        }
+        #alert-panel.amber {
+            background-color: var(--warning-color);
+        }
+        #alert-panel.go {
+            background-color: var(--success-color);
+        }
+        #alert-text {
+            font-size: 4em;
+            font-weight: 700;
+            margin-bottom: var(--gap-m);
+        }
+        #alert-countdown {
+            font-size: 8em;
+            font-weight: 700;
+            animation: pulse 1s infinite alternate;
+        }
+        #alert-panel.go #alert-countdown {
+            display: none;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); opacity: 1; }
+            to { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        /* Race Complete Banner */
+        #race-complete-banner {
+            grid-column: 1 / -1;
+            background-color: var(--success-color);
+            color: white;
+            text-align: center;
+            padding: var(--gap-m);
+            border-radius: var(--border-radius);
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: var(--gap-l);
+        }
+        #race-complete-banner.hidden {
+            display: none;
+        }
+
+        /* Runner Management */
+        #runner-management {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--gap-l);
+        }
+
+        #add-runner-form,
+        .card > div {
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-s);
+        }
+
+        input[type="text"],
+        textarea {
+            padding: var(--gap-s);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-family: var(--font-family-body);
+            font-size: 1em;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(204, 0, 0, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        /* Buttons */
+        .danger-btn {
+            background-color: var(--danger-color);
+        }
+        .danger-btn:hover {
+            background-color: #c82333;
+        }
+        .purple-btn {
+            background-color: var(--purple-btn-color);
+        }
+        .purple-btn:hover {
+            background-color: #5a2eac;
+        }
+
+        /* Results and Runners */
+        #results-and-runners {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--gap-l);
+        }
+
+        #leaderboard-container {
+            order: 2; /* Mobile first: leaderboard below table */
+        }
+
+        #runners-table-container {
+            overflow-x: auto;
+            order: 1;
+        }
+
+        #runners-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9em;
+            min-width: 600px; /* Ensure table is wide enough */
+        }
+
+        #runners-table th,
+        #runners-table td {
+            padding: var(--gap-s) var(--gap-m);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #runners-table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        #runners-table tbody tr:nth-child(even) {
+            background-color: rgba(var(--primary-color-rgb), 0.05); /* Light stripe */
+        }
+        body.dark-mode #runners-table tbody tr:nth-child(even) {
+            background-color: rgba(var(--primary-color-rgb), 0.1);
+        }
+
+        #runners-table tbody tr:hover {
+            background-color: rgba(var(--primary-color-rgb), 0.1);
+        }
+        body.dark-mode #runners-table tbody tr:hover {
+            background-color: rgba(var(--primary-color-rgb), 0.2);
+        }
+
+        #runners-table td {
+            vertical-align: middle;
+        }
+
+        #runners-table .editable {
+            cursor: pointer;
+            border-bottom: 1px dashed var(--text-color);
+        }
+
+        #runners-table .editable:hover {
+            background-color: rgba(var(--primary-color-rgb), 0.2);
+        }
+
+        #runners-table .delete-btn {
+            background-color: transparent;
+            color: var(--danger-color);
+            border: none;
+            padding: var(--gap-s);
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: color 0.2s;
+            margin: 0;
+        }
+        #runners-table .delete-btn:hover {
+            color: var(--primary-dark-color);
+            background-color: transparent;
+            transform: none;
+        }
+
+        /* Differential highlighting */
+        .differential.positive { color: var(--success-color); font-weight: 600; }
+        .differential.negative { color: var(--danger-color); font-weight: 600; }
+
+        /* Start In progress bar */
+        .start-in-bar-container {
+            width: 100px;
+            height: 10px;
+            background-color: var(--border-color);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .start-in-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--success-color);
+            transition: width 0.5s ease-out, background-color 0.5s ease-out;
+            border-radius: 5px;
+        }
+        .start-in-bar.yellow { background-color: var(--warning-color); }
+        .start-in-bar.red { background-color: var(--danger-color); }
+
+        /* Leaderboard */
+        #leaderboard-list {
+            list-style: none;
+            padding: 0;
+        }
+        #leaderboard-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--gap-s) 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        #leaderboard-list li:last-child {
+            border-bottom: none;
+        }
+        #leaderboard-list li strong {
+            color: var(--primary-color);
+            margin-right: var(--gap-s);
+        }
+
+        /* Media Queries */
+        @media (min-width: 768px) {
+            #app {
+                padding: 0 var(--gap-l);
+            }
+            header {
+                justify-content: space-between;
+                text-align: left;
+            }
+            header h1 {
+                font-size: 2.2em;
+                text-align: left;
+            }
+            .timer-controls {
+                flex-direction: row;
+            }
+            #results-and-runners {
+                grid-template-columns: 2fr 1fr; /* Table takes 2/3, leaderboard 1/3 */
+            }
+            #leaderboard-container {
+                order: 2; /* Leaderboard on right */
+            }
+            #runners-table-container {
+                order: 1; /* Table on left */
+            }
+        }
+
+        @media (max-width: 767px) {
+            #timer-display {
+                font-size: 4em;
+            }
+            header {
+                flex-direction: column;
+                gap: var(--gap-s);
+            }
+            header h1 {
+                font-size: 1.5em;
+                text-align: center;
+                margin-bottom: var(--gap-s);
+            }
+            .header-controls {
+                width: 100%;
+                justify-content: center;
+            }
+            #runner-management {
+                grid-template-columns: 1fr;
+            }
+            .timer-controls {
+                flex-direction: column;
+            }
+        }
+        
+        /* Define --primary-color-rgb for rgba usage */
+        :root {
+            --primary-color-rgb: 204, 0, 0; /* RGB for #CC0000 */
+        }
+    </style>
+</head>
+<body class="light-mode">
+    <div id="app">
+        <header>
+            <!-- Harpenden Arrows Logo (SVG data URI for single-file, no external dependency) -->
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0NDMDAwMCI+PHBhdGggZD0iTTUgMTJIM3YyaDJ2LTJ6bTAgNEgzVjE4aDJ2LTN6bTAtOEgzVjdoMnYyem0xNi00SDl2MTZoMTJWM3ptLTQgMTJIN3YtMmgydi0yaDJ2MmgyVjE1em0wLTdIN3YtMmgyVjdoMmgyVjV6Ii8+PC9zdmc+" alt="Harpenden Arrows Logo" id="logo">
+            <h1>Harpenden Arrows Handicap Race Timer</h1>
+            <div class="header-controls">
+                <span id="runner-count">0 Runners</span>
+                <button id="dark-mode-toggle" aria-label="Toggle dark mode">🌙</button>
+            </div>
+        </header>
+
+        <main>
+            <section id="timer-section">
+                <div id="timer-display">00:00</div>
+                <div class="timer-controls">
+                    <button id="start-btn" aria-label="Start Timer">Start</button>
+                    <button id="stop-btn" aria-label="Stop Timer" disabled>Stop</button>
+                    <button id="reset-btn" aria-label="Reset All Race Data">Reset</button>
+                </div>
+            </section>
+
+            <section id="race-status">
+                <div id="alert-panel" class="hidden">
+                    <div id="alert-text"></div>
+                    <div id="alert-countdown"></div>
+                </div>
+                <div id="race-complete-banner" class="hidden" aria-live="polite">Race Complete! All runners checked in.</div>
+            </section>
+
+            <section id="runner-management">
+                <div class="card">
+                    <h2>Add Runner</h2>
+                    <form id="add-runner-form">
+                        <input type="text" id="new-runner-name" placeholder="Runner Name" required aria-label="Runner Name">
+                        <input type="text" id="new-runner-racetime" placeholder="Race Time (mm:ss)" pattern="\d{2}:\d{2}" title="Format: mm:ss (e.g., 30:00)" required aria-label="Expected Race Time">
+                        <button type="submit">Add Runner</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>Bulk Import Runners</h2>
+                    <textarea id="bulk-import-textarea" rows="5" placeholder="Name 00:00&#10;Another Name 00:00" aria-label="Bulk import runner data"></textarea>
+                    <button id="bulk-import-btn">Import</button>
+                </div>
+
+                <div class="card">
+                    <h2>Race Actions</h2>
+                    <button id="check-in-btn" aria-label="Check-in runner">Check-in (<span id="next-finish-pos-display">1</span>st)</button>
+                    <button id="update-finish-times-btn" class="purple-btn" aria-label="Update Race Times from Finish Times">Update Finish Times to Race Times</button>
+                    <button id="export-csv-btn" aria-label="Export data to CSV">Export to CSV</button>
+                    <button id="clear-all-runners-btn" class="danger-btn" aria-label="Clear All Runners">Clear All Runners</button>
+                </div>
+            </section>
+
+            <section id="results-and-runners">
+                <div id="leaderboard-container" class="card">
+                    <h2>Leaderboard</h2>
+                    <ul id="leaderboard-list" aria-live="polite">
+                        <!-- Leaderboard items will go here -->
+                    </ul>
+                </div>
+
+                <div id="runners-table-container" class="card">
+                    <h2>Runners</h2>
+                    <table id="runners-table" aria-live="polite">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Race Time</th>
+                                <th>Gap</th>
+                                <th>Start In</th>
+                                <th>Race Pos.</th>
+                                <th>Finish Time</th>
+                                <th>Diff.</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Runner rows will go here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Utility functions for time conversion
+        const MM_SS_REGEX = /^(\d{1,2}):(\d{2})$/;
+
+        function mmSsToMs(mmSs) {
+            if (!mmSs) return 0;
+            const match = mmSs.match(MM_SS_REGEX);
+            if (!match) return 0;
+            const minutes = parseInt(match[1], 10);
+            const seconds = parseInt(match[2], 10);
+            return (minutes * 60 + seconds) * 1000;
+        }
+
+        function msToMmSs(ms) {
+            if (ms < 0) ms = 0; // Ensure non-negative
+            const totalSeconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // Web Audio API for beep sound
+        let audioContext;
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.error('Web Audio API is not supported in this browser:', e);
+            }
+        }
+
+        function playBeep(frequency = 440, duration = 0.1, volume = 0.5) {
+            if (!audioContext) {
+                initAudio();
+                if (!audioContext) return; // If initAudio failed, don't proceed
+            }
+            
+            // Resume audio context if it's suspended (common on first user interaction)
+            if (audioContext.state === 'suspended') {
+                audioContext.resume().then(() => {
+                    _playBeepActual(frequency, duration, volume);
+                });
+            } else {
+                _playBeepActual(frequency, duration, volume);
+            }
+        }
+
+        function _playBeepActual(frequency, duration, volume) {
+            const gainNode = audioContext.createGain();
+            gainNode.gain.value = volume;
+            gainNode.connect(audioContext.destination);
+
+            const oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.connect(gainNode);
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        // --- Global State ---
+        let runners = [];
+        let timer = {
+            intervalId: null,
+            isRunning: false,
+            currentTimeMs: 0,
+        };
+        let finishLineRecords = []; // Stores { position: 1, timeMs: 12345 }
+        let nextFinishPosition = 1;
+        let currentAlert = null; // { runnerId, name, type: 'amber' | 'go', countdown: 5 }
+        let alertIntervalId = null;
+        let darkMode = false;
+
+        // --- DOM Elements ---
+        const timerDisplay = document.getElementById('timer-display');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const checkInBtn = document.getElementById('check-in-btn');
+        const nextFinishPosDisplay = document.getElementById('next-finish-pos-display');
+        const addRunnerForm = document.getElementById('add-runner-form');
+        const newRunnerNameInput = document.getElementById('new-runner-name');
+        const newRunnerRaceTimeInput = document.getElementById('new-runner-racetime');
+        const bulkImportTextarea = document.getElementById('bulk-import-textarea');
+        const bulkImportBtn = document.getElementById('bulk-import-btn');
+        const exportCsvBtn = document.getElementById('export-csv-btn');
+        const updateFinishTimesBtn = document.getElementById('update-finish-times-btn');
+        const clearAllRunnersBtn = document.getElementById('clear-all-runners-btn');
+        const runnersTableBody = document.querySelector('#runners-table tbody');
+        const alertPanel = document.getElementById('alert-panel');
+        const alertText = document.getElementById('alert-text');
+        const alertCountdown = document.getElementById('alert-countdown');
+        const leaderboardList = document.getElementById('leaderboard-list');
+        const raceCompleteBanner = document.getElementById('race-complete-banner');
+        const runnerCountSpan = document.getElementById('runner-count');
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+
+        const LOCAL_STORAGE_KEY = 'harpenden_runners';
+        const DARK_MODE_KEY = 'harpenden_dark_mode';
+
+        // --- Persistence ---
+        function saveState() {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
+                runners,
+                timerCurrentTimeMs: timer.currentTimeMs,
+                finishLineRecords,
+                nextFinishPosition
+            }));
+        }
+
+        function loadState() {
+            const storedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (storedState) {
+                const parsedState = JSON.parse(storedState);
+                runners = parsedState.runners || [];
+                timer.currentTimeMs = parsedState.timerCurrentTimeMs || 0;
+                finishLineRecords = parsedState.finishLineRecords || [];
+                nextFinishPosition = parsedState.nextFinishPosition || 1;
+            }
+            // Ensure raceTimeMs is calculated for all runners on load
+            runners.forEach(runner => {
+                runner.raceTimeMs = mmSsToMs(runner.raceTime);
+                if (!runner.id) runner.id = generateId(); // Backfill IDs for old data
+            });
+        }
+
+        function loadDarkModePreference() {
+            const storedPreference = localStorage.getItem(DARK_MODE_KEY);
+            darkMode = storedPreference === 'true';
+            document.body.classList.toggle('dark-mode', darkMode);
+            darkModeToggle.textContent = darkMode ? '☀️' : '🌙';
+        }
+
+        function toggleDarkMode() {
+            darkMode = !darkMode;
+            document.body.classList.toggle('dark-mode', darkMode);
+            darkModeToggle.textContent = darkMode ? '☀️' : '🌙';
+            localStorage.setItem(DARK_MODE_KEY, darkMode);
+        }
+
+        // --- Timer Logic ---
+        function startTimer() {
+            if (timer.isRunning) return;
+            timer.isRunning = true;
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            resetBtn.disabled = true; // Disable reset during race
+            checkInBtn.disabled = false;
+
+            timer.intervalId = setInterval(() => {
+                timer.currentTimeMs += 1000;
+                renderApp();
+            }, 1000);
+            saveState(); // Save initial state
+        }
+
+        function stopTimer() {
+            if (!timer.isRunning) return;
+            clearInterval(timer.intervalId);
+            timer.isRunning = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            resetBtn.disabled = false;
+            checkInBtn.disabled = true;
+            clearAlert(); // Clear any active alerts
+            saveState();
+        }
+
+        function resetTimer() {
+            if (!confirm('Are you sure you want to reset the timer and all race positions/finish times? This cannot be undone.')) {
+                return;
+            }
+            stopTimer();
+            timer.currentTimeMs = 0;
+            finishLineRecords = [];
+            nextFinishPosition = 1;
+            runners.forEach(runner => {
+                runner.racePosition = null;
+                runner.finishTime = null;
+                runner.finishTimeMs = 0;
+                runner.differential = null;
+            });
+            clearAlert();
+            saveState();
+            renderApp();
+        }
+
+        // --- Runner Management ---
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2);
+        }
+
+        function addRunner(name, raceTime) {
+            if (!name || !MM_SS_REGEX.test(raceTime)) {
+                alert('Please enter a valid Name and Race Time (mm:ss).');
+                return false;
+            }
+            runners.push({
+                id: generateId(),
+                name: name.trim(),
+                raceTime: raceTime,
+                raceTimeMs: mmSsToMs(raceTime),
+                startOffsetMs: 0, // Calculated later
+                startInMs: 0, // Calculated later
+                hasStarted: false, // Flag for alert system
+                racePosition: null,
+                finishTime: null,
+                finishTimeMs: 0,
+                differential: null,
+            });
+            saveState();
+            renderApp();
+            return true;
+        }
+
+        function deleteRunner(id) {
+            if (!confirm('Are you sure you want to delete this runner?')) return;
+            runners = runners.filter(runner => runner.id !== id);
+            // Re-evaluate finish line records if a runner with an assigned position was deleted
+            finishLineRecords.forEach(record => {
+                const runnerExists = runners.some(r => r.racePosition === record.position);
+                if (!runnerExists) {
+                    // If a finish position is no longer assigned, maybe clear it from records
+                    // Or, more simply, let the user re-assign. For now, we just delete the runner.
+                }
+            });
+            saveState();
+            renderApp();
+        }
+
+        function clearAllRunners() {
+            if (!confirm('Are you sure you want to delete ALL runners and clear all race data? This cannot be undone.')) {
+                return;
+            }
+            runners = [];
+            resetTimer(); // Also clears finishLineRecords and timer data
+            saveState();
+            renderApp();
+        }
+
+        function bulkImport() {
+            const text = bulkImportTextarea.value.trim();
+            if (!text) return;
+
+            const lines = text.split('\n');
+            let importedCount = 0;
+            lines.forEach(line => {
+                const parts = line.trim().split(/\s+(?=\d{2}:\d{2}$)/); // Split by space, but only before mm:ss
+                if (parts.length === 2 && MM_SS_REGEX.test(parts[1])) {
+                    if (addRunner(parts[0], parts[1])) {
+                        importedCount++;
+                    }
+                } else {
+                    console.warn('Skipping malformed line:', line);
+                }
+            });
+            alert(`Imported ${importedCount} runners.`);
+            bulkImportTextarea.value = '';
+            saveState();
+            renderApp();
+        }
+
+        function updateFinishTimesToRaceTimes() {
+            if (!confirm('This will update each runner\'s "Race Time" to their "Finish Time" from the last race. This is useful for setting handicaps for the next race. Continue?')) {
+                return;
+            }
+            let updatedCount = 0;
+            runners.forEach(runner => {
+                if (runner.finishTime) {
+                    runner.raceTime = runner.finishTime;
+                    runner.raceTimeMs = mmSsToMs(runner.raceTime);
+                    updatedCount++;
+                }
+            });
+            alert(`Updated ${updatedCount} runner(s) race times to their last finish times.`);
+            // Reset race data after updating race times, as this is typically done between races
+            resetTimer(); // This also calls saveState and renderApp
+        }
+
+        // --- Race Actions ---
+        function checkIn() {
+            if (!timer.isRunning) {
+                alert('Timer must be running to check in a runner.');
+                return;
+            }
+            if (nextFinishPosition > runners.length && runners.length > 0) {
+                alert('All expected runners have already checked in. You can still record, but positions may need manual adjustment.');
+            }
+
+            finishLineRecords.push({
+                position: nextFinishPosition,
+                timeMs: timer.currentTimeMs
+            });
+            nextFinishPosition++;
+            playBeep(880, 0.05, 0.8); // Short high beep for check-in
+            saveState();
+            renderApp();
+        }
+
+        // --- Data Calculations ---
+        function calculateRunnerData() {
+            if (runners.length === 0) return;
+
+            // 1. Sort runners by Race Time (slowest first for start order)
+            const sortedRunners = [...runners].sort((a, b) => b.raceTimeMs - a.raceTimeMs);
+            const slowestRaceTimeMs = sortedRunners[0] ? sortedRunners[0].raceTimeMs : 0;
+
+            // 2. Calculate Start Offset and Start In times
+            runners.forEach(runner => {
+                runner.startOffsetMs = slowestRaceTimeMs - runner.raceTimeMs;
+                runner.startInMs = runner.startOffsetMs - timer.currentTimeMs;
+            });
+
+            // 3. Assign Finish Times and Differentials based on finishLineRecords and assigned racePosition
+            runners.forEach(runner => {
+                if (runner.racePosition !== null && runner.racePosition > 0) {
+                    const record = finishLineRecords.find(rec => rec.position === runner.racePosition);
+                    if (record) {
+                        runner.finishTimeMs = record.timeMs;
+                        runner.finishTime = msToMmSs(record.timeMs);
+                        runner.differential = msToMmSs(runner.finishTimeMs - runner.raceTimeMs);
+                    } else {
+                        runner.finishTime = null;
+                        runner.finishTimeMs = 0;
+                        runner.differential = null;
+                    }
+                } else {
+                    runner.finishTime = null;
+                    runner.finishTimeMs = 0;
+                    runner.differential = null;
+                }
+            });
+        }
+
+        // --- Rendering ---
+        function renderApp() {
+            calculateRunnerData();
+            renderTimerDisplay();
+            renderRunnersTable();
+            renderLeaderboard();
+            renderAlerts();
+            renderRaceCompleteBanner();
+            runnerCountSpan.textContent = `${runners.length} Runner${runners.length === 1 ? '' : 's'}`;
+            nextFinishPosDisplay.textContent = nextFinishPosition;
+            saveState(); // Save state on every render cycle (only data, not timer.isRunning)
+        }
+
+        function renderTimerDisplay() {
+            timerDisplay.textContent = msToMmSs(timer.currentTimeMs);
+            startBtn.disabled = timer.isRunning;
+            stopBtn.disabled = !timer.isRunning;
+            resetBtn.disabled = timer.isRunning;
+            checkInBtn.disabled = !timer.isRunning;
+        }
+
+        function renderRunnersTable() {
+            runnersTableBody.innerHTML = '';
+            // Sort runners for display: by start order (slowest race time first)
+            const sortedRunners = [...runners].sort((a, b) => b.raceTimeMs - a.raceTimeMs);
+
+            sortedRunners.forEach(runner => {
+                const row = runnersTableBody.insertRow();
+                row.dataset.runnerId = runner.id;
+
+                // Gap calculation: time between this runner's start and the previous runner's start
+                const previousRunner = sortedRunners[sortedRunners.indexOf(runner) - 1];
+                const gapMs = previousRunner ? (previousRunner.startOffsetMs - runner.startOffsetMs) : 0;
+
+                row.innerHTML = `
+                    <td class="editable" data-field="name">${runner.name}</td>
+                    <td class="editable" data-field="raceTime">${runner.raceTime}</td>
+                    <td>${msToMmSs(gapMs)}</td>
+                    <td class="start-in-cell">
+                        <div class="start-in-bar-container">
+                            <div class="start-in-bar" style="width:0%;"></div>
+                        </div>
+                        <span class="start-in-text"></span>
+                    </td>
+                    <td class="editable" data-field="racePosition">${runner.racePosition || '-'}</td>
+                    <td>${runner.finishTime || '-'}</td>
+                    <td class="differential ${runner.differential && runner.differential.startsWith('-') ? 'negative' : runner.differential && runner.differential !== '00:00' ? 'positive' : ''}">
+                        ${runner.differential || '-'}
+                    </td>
+                    <td><button class="delete-btn" aria-label="Delete ${runner.name}">&times;</button></td>
+                `;
+
+                // Update Start In cell
+                const startInCell = row.querySelector('.start-in-cell');
+                const startInBar = startInCell.querySelector('.start-in-bar');
+                const startInText = startInCell.querySelector('.start-in-text');
+                
+                let displayMs = runner.startInMs;
+                if (displayMs < -1000) { // If started more than 1 second ago
+                    startInText.textContent = 'STARTED';
+                    startInBar.style.width = '100%';
+                    startInBar.className = 'start-in-bar red';
+                    runner.hasStarted = true;
+                } else if (displayMs <= 0) { // Started now or very recently
+                    startInText.textContent = 'GO!';
+                    startInBar.style.width = '100%';
+                    startInBar.className = 'start-in-bar red';
+                    runner.hasStarted = true;
+                } else {
+                    startInText.textContent = msToMmSs(displayMs);
+                    runner.hasStarted = false;
+                    // Progress bar: Max 5 minutes (300,000 ms) for full bar
+                    const maxProgressBarMs = 300 * 1000;
+                    const progress = Math.min(1, Math.max(0, 1 - (displayMs / maxProgressBarMs)));
+                    startInBar.style.width = `${progress * 100}%`;
+
+                    if (displayMs < 30 * 1000) { // Less than 30 seconds
+                        startInBar.className = 'start-in-bar red';
+                    } else if (displayMs < 60 * 1000) { // Less than 1 minute
+                        startInBar.className = 'start-in-bar yellow';
+                    } else {
+                        startInBar.className = 'start-in-bar'; // Default green
+                    }
+                }
+
+                // Add event listeners for inline editing
+                row.querySelectorAll('.editable').forEach(cell => {
+                    cell.addEventListener('dblclick', (e) => enableInlineEdit(e, runner.id, cell.dataset.field));
+                });
+                row.querySelector('.delete-btn').addEventListener('click', () => deleteRunner(runner.id));
+            });
+        }
+
+        function enableInlineEdit(event, runnerId, field) {
+            const cell = event.target;
+            const originalValue = cell.textContent.trim();
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = originalValue;
+            input.ariaLabel = `Edit ${field} for runner ${runners.find(r => r.id === runnerId)?.name || ''}`;
+
+            cell.innerHTML = '';
+            cell.appendChild(input);
+            input.focus();
+
+            const saveEdit = () => {
+                const newValue = input.value.trim();
+                if (newValue === originalValue) {
+                    cell.textContent = originalValue;
+                    return;
+                }
+
+                const runner = runners.find(r => r.id === runnerId);
+                if (!runner) return;
+
+                if (field === 'raceTime') {
+                    if (MM_SS_REGEX.test(newValue)) {
+                        runner.raceTime = newValue;
+                        runner.raceTimeMs = mmSsToMs(newValue);
+                    } else {
+                        alert('Invalid Race Time format. Please use mm:ss.');
+                        cell.textContent = originalValue;
+                        return;
+                    }
+                } else if (field === 'racePosition') {
+                    const pos = parseInt(newValue, 10);
+                    if (!isNaN(pos) && pos > 0) {
+                        // Check if this position is already assigned to another runner
+                        const existingRunnerWithPos = runners.find(r => r.racePosition === pos && r.id !== runnerId);
+                        if (existingRunnerWithPos) {
+                            alert(`Position ${pos} is already assigned to ${existingRunnerWithPos.name}. Please clear their position first or choose another.`);
+                            cell.textContent = originalValue;
+                            return;
+                        }
+                        runner.racePosition = pos;
+                    } else if (newValue === '' || newValue === '-') {
+                        runner.racePosition = null;
+                    }
+                    else {
+                        alert('Race Position must be a positive number or empty.');
+                        cell.textContent = originalValue;
+                        return;
+                    }
+                } else if (field === 'name') {
+                    runner.name = newValue;
+                }
+
+                saveState();
+                renderApp();
+            };
+
+            input.addEventListener('blur', saveEdit);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    input.blur(); // Trigger blur to save
+                } else if (e.key === 'Escape') {
+                    cell.textContent = originalValue; // Revert
+                }
+            });
+        }
+
+        function renderLeaderboard() {
+            leaderboardList.innerHTML = '';
+            const finishedRunners = runners.filter(r => r.finishTimeMs > 0);
+            if (finishedRunners.length === 0) {
+                leaderboardList.innerHTML = '<li>No runners have finished yet.</li>';
+                return;
+            }
+            finishedRunners.sort((a, b) => a.racePosition - b.racePosition); // Sort by assigned race position
+
+            finishedRunners.forEach(runner => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span><strong>${runner.racePosition}.</strong> ${runner.name}</span>
+                    <span>${runner.finishTime}</span>
+                `;
+                leaderboardList.appendChild(li);
+            });
+        }
+
+        function renderAlerts() {
+            if (!timer.isRunning) {
+                clearAlert();
+                return;
+            }
+
+            // Find next runner to alert
+            const nextAlertRunner = [...runners]
+                .filter(r => !r.hasStarted && r.startInMs > -1000 && r.startInMs <= 5000) // Within 5 seconds or just passed
+                .sort((a, b) => a.startInMs - b.startInMs)[0]; // Closest to 0 (or just past)
+
+            if (nextAlertRunner) {
+                if (nextAlertRunner.startInMs <= 0 && currentAlert?.runnerId !== nextAlertRunner.id) { // GO!
+                    triggerAlert(nextAlertRunner.id, nextAlertRunner.name, 'go');
+                } else if (nextAlertRunner.startInMs > 0 && currentAlert?.runnerId !== nextAlertRunner.id) { // Amber countdown
+                    triggerAlert(nextAlertRunner.id, nextAlertRunner.name, 'amber');
+                }
+            } else if (!nextAlertRunner && currentAlert) {
+                // No runner needs an alert, but one is active, clear it (e.g., timer stopped or runner started)
+                clearAlert();
+            }
+        }
+
+        function triggerAlert(runnerId, runnerName, type) {
+            if (currentAlert && currentAlert.runnerId === runnerId && currentAlert.type === type) {
+                // Already displaying this alert, just update countdown if amber
+                if (type === 'amber') {
+                    const msRemaining = runners.find(r => r.id === runnerId)?.startInMs || 0;
+                    currentAlert.countdown = Math.ceil(msRemaining / 1000);
+                    alertCountdown.textContent = currentAlert.countdown > 0 ? currentAlert.countdown : '';
+                }
+                return;
+            }
+
+            clearAlert(); // Clear any previous alert
+
+            currentAlert = { runnerId, name: runnerName, type: type, countdown: 5 };
+            alertPanel.classList.remove('hidden');
+            alertPanel.classList.remove('amber', 'go'); // Clear previous classes
+
+            if (type === 'amber') {
+                alertPanel.classList.add('amber');
+                alertText.textContent = `${runnerName} Starts In...`;
+                alertCountdown.textContent = currentAlert.countdown;
+                playBeep(220, 0.1, 0.5); // Low beep for amber countdown
+
+                alertIntervalId = setInterval(() => {
+                    currentAlert.countdown--;
+                    if (currentAlert.countdown <= 0) {
+                        // This should be handled by the next renderAlerts call detecting startInMs <= 0
+                        // For safety, clear here if somehow it gets stuck.
+                        clearAlert();
+                    } else {
+                        alertCountdown.textContent = currentAlert.countdown;
+                        playBeep(220, 0.1, 0.5);
+                    }
+                }, 1000);
+            } else if (type === 'go') {
+                alertPanel.classList.add('go');
+                alertText.textContent = `GO! ${runnerName}`;
+                alertCountdown.textContent = ''; // No countdown for GO
+                playBeep(660, 0.3, 1.0); // Loud, higher pitch beep for GO!
+
+                setTimeout(() => {
+                    clearAlert();
+                }, 2000); // Auto-dismiss GO after 2 seconds
+            }
+        }
+
+        function clearAlert() {
+            clearInterval(alertIntervalId);
+            alertIntervalId = null;
+            currentAlert = null;
+            alertPanel.classList.add('hidden');
+            alertPanel.classList.remove('amber', 'go');
+            alertText.textContent = '';
+            alertCountdown.textContent = '';
+        }
+
+        function renderRaceCompleteBanner() {
+            const allRunnersFinished = runners.length > 0 && runners.every(r => r.finishTimeMs > 0);
+            raceCompleteBanner.classList.toggle('hidden', !allRunnersFinished);
+        }
+
+        // --- Export to CSV ---
+        function exportToCsv() {
+            const headers = [
+                'Name', 'Race Time (mm:ss)', 'Start Order', 'Start Offset (ms)',
+                'Race Position', 'Finish Time (mm:ss)', 'Differential (mm:ss)'
+            ];
+
+            const csvRows = [headers.join(',')];
+
+            // Sort runners by their calculated start order (slowest race time first)
+            const sortedByStartOrder = [...runners].sort((a, b) => b.raceTimeMs - a.raceTimeMs);
+
+            sortedByStartOrder.forEach((runner, index) => {
+                const values = [
+                    `"${runner.name}"`, // Quote name to handle commas
+                    runner.raceTime,
+                    index + 1, // 1-based start order
+                    runner.startOffsetMs,
+                    runner.racePosition || '',
+                    runner.finishTime || '',
+                    runner.differential || ''
+                ];
+                csvRows.push(values.join(','));
+            });
+
+            const csvString = csvRows.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', 'harpenden_arrows_race_data.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- Event Listeners ---
+        function setupEventListeners() {
+            startBtn.addEventListener('click', startTimer);
+            stopBtn.addEventListener('click', stopTimer);
+            resetBtn.addEventListener('click', resetTimer);
+            checkInBtn.addEventListener('click', checkIn);
+            addRunnerForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                addRunner(newRunnerNameInput.value, newRunnerRaceTimeInput.value);
+                newRunnerNameInput.value = '';
+                newRunnerRaceTimeInput.value = '';
+                newRunnerNameInput.focus();
+            });
+            bulkImportBtn.addEventListener('click', bulkImport);
+            exportCsvBtn.addEventListener('click', exportToCsv);
+            updateFinishTimesBtn.addEventListener('click', updateFinishTimesToRaceTimes);
+            clearAllRunnersBtn.addEventListener('click', clearAllRunners);
+            darkModeToggle.addEventListener('click', toggleDarkMode);
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Ignore shortcuts if an input field is focused
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                    return;
+                }
+
+                if (e.key === ' ') { // Spacebar for Check-in
+                    e.preventDefault(); // Prevent scrolling
+                    checkIn();
+                } else if (e.key === 'Enter') { // Enter for Start/Stop toggle
+                    e.preventDefault();
+                    if (timer.isRunning) {
+                        stopTimer();
+                    } else {
+                        startTimer();
+                    }
+                }
+            });
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDarkModePreference();
+            loadState();
+            setupEventListeners();
+            initAudio(); // Initialize audio context, will be suspended until user interaction
+            renderApp(); // Initial render
+        });
+    </script>
+</body>
+</html>
