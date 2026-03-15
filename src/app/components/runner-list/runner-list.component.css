@@ -386,7 +386,7 @@
 }
 
 /* ─── Responsive ─── */
-@media (max-width: 768px) {
+@media (max-width: 768px), (orientation: landscape) and (max-height: 500px) {
   .runner-layout {
     flex-direction: column-reverse;
   }
@@ -413,5 +413,38 @@
 
   .runners-table {
     min-width: unset;
+  }
+}
+
+/* landscape phone — alerts above table, table full width */
+@media (orientation: landscape) and (max-height: 500px) {
+  .runner-layout {
+    flex-direction: column-reverse;
+  }
+
+  .alerts-panel {
+    flex: none;
+    width: 100%;
+    max-height: 160px;
+    overflow-y: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 0;
+  }
+
+  .alerts-panel-header {
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
+  .alert-box {
+    flex: 0 0 160px;
+    padding: 10px;
+    margin-bottom: 0;
+  }
+
+  .alerts-waiting {
+    padding: 8px 0;
   }
 }
