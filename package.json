@@ -1,6 +1,6 @@
 {
   "name": "race-timer",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "A countdown timer application for Harpenden Arrows with runner management and announcements.",
   "main": "electron/main.js",
   "scripts": {
@@ -14,7 +14,7 @@
     "deploy:ghpages": "npm run build:ghpages && npx angular-cli-ghpages --dir=dist/race-timer",
     "build:electron": "ng build --base-href ./",
     "electron:start": "npm run build:electron && electron .",
-    "electron:dist": "npm run build:electron && npx electron-packager . \"Harpenden Arrows Race Timer\" --platform=win32 --arch=x64 --out=release --overwrite --ignore=node_modules --ignore=src --ignore=.angular --ignore=release && powershell -Command \"Compress-Archive -Path 'release/Harpenden Arrows Race Timer-win32-x64' -DestinationPath 'release/HarpendenArrowsRaceTimer.zip' -Force\"",
+    "electron:dist": "npm run build:electron && npx electron-packager . \"Race Timer\" --platform=win32 --arch=x64 --out=release --overwrite --ignore=node_modules --ignore=src --ignore=.angular --ignore=release && powershell -Command \"Compress-Archive -Path 'release/Race Timer-win32-x64' -DestinationPath 'release/RaceTimer.zip' -Force\"",
     "release": "node scripts/release.js"
   },
   "private": true,
@@ -43,7 +43,7 @@
   },
   "build": {
     "appId": "com.harpendenarrows.racetimer",
-    "productName": "Harpenden Arrows Race Timer",
+    "productName": "Race Timer",
     "asar": false,
     "directories": {
       "output": "release"
@@ -58,7 +58,7 @@
     },
     "nsis": {
       "oneClick": true,
-      "shortcutName": "Harpenden Arrows Race Timer"
+      "shortcutName": "Race Timer"
     }
   },
   "engines": {
