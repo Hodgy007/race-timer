@@ -4,12 +4,7 @@
   padding: 36px 24px 16px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-}
-
-app-runner-list {
-  width: 100%;
-  align-self: stretch;
+  align-items: stretch;
 }
 
 /* ─── Ring + Clock ─── */
@@ -20,7 +15,7 @@ app-runner-list {
   justify-content: center;
   width: 240px;
   height: 240px;
-  margin-bottom: 32px;
+  margin: 0 auto 32px;
 }
 
 .timer-arc {
