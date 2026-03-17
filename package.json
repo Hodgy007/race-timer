@@ -1,6 +1,6 @@
 {
   "name": "race-timer",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "A countdown timer application for Harpenden Arrows with runner management and announcements.",
   "main": "electron/main.js",
   "scripts": {
