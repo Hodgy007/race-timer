@@ -47,17 +47,87 @@
   filter: drop-shadow(0 0 6px var(--red));
 }
 
+.timer-readout {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.timer-status {
+  font-family: var(--font-condensed);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+}
+
+.timer-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-dim);
+}
+
+.timer-container[data-status="live"] .timer-status {
+  color: var(--red-bright);
+}
+.timer-container[data-status="live"] .timer-status::before {
+  background: var(--red-bright);
+  animation: status-blink 1s ease-in-out infinite;
+}
+
+.timer-container[data-status="paused"] .timer-status {
+  color: var(--amber);
+}
+.timer-container[data-status="paused"] .timer-status::before {
+  background: var(--amber);
+}
+
+.timer-container[data-status="overtime"] .timer-status {
+  color: var(--amber);
+}
+.timer-container[data-status="overtime"] .timer-status::before {
+  background: var(--amber);
+  animation: status-blink 1s ease-in-out infinite;
+}
+
+@keyframes status-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
 .timer-display {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 52px;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--text);
   line-height: 1;
-  position: relative;
-  z-index: 1;
   transition: text-shadow 0.3s;
-  user-select: none;
+}
+
+.timer-remaining {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.timer-container[data-status="overtime"] .timer-remaining {
+  color: var(--amber);
 }
 
 /* Pulse glow when running */
@@ -67,6 +137,12 @@
 
 .timer-container.is-running .arc-fill {
   filter: drop-shadow(0 0 10px var(--red));
+}
+
+/* Overtime: arc complete, switch glow to amber (after .is-running to win the cascade) */
+.timer-container[data-status="overtime"] .arc-fill {
+  stroke: var(--amber);
+  filter: drop-shadow(0 0 10px var(--amber));
 }
 
 @keyframes clock-pulse {
@@ -137,11 +213,20 @@
   box-shadow: 0 0 18px var(--green-glow);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .timer-container.is-running .timer-display { animation: none; }
+  .timer-container[data-status="live"] .timer-status::before,
+  .timer-container[data-status="overtime"] .timer-status::before { animation: none; }
+  .arc-fill { transition: none; }
+}
+
 @media (max-width: 768px) {
   .timer-container { padding: 24px 12px 8px; }
 
   .timer-ring-wrap { width: 190px; height: 190px; margin-bottom: 24px; }
+  .timer-readout { gap: 6px; }
   .timer-display { font-size: 40px; }
+  .timer-remaining { font-size: 11px; }
 
   .button-group { gap: 8px; margin-bottom: 24px; }
   .button-group button {

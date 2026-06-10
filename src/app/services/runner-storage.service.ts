@@ -38,7 +38,8 @@ export class RunnerStorageService {
   loadRunners(): StoredRunner[] {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY);
-      return data ? JSON.parse(data) : [];
+      const parsed = data ? JSON.parse(data) : [];
+      return Array.isArray(parsed) ? parsed : [];
     } catch (error) {
       console.error('Error loading runners from storage:', error);
       return [];

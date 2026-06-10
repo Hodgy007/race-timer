@@ -1,12 +1,20 @@
-import { Component, Input, OnChanges, OnInit, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, Output, EventEmitter, ChangeDetectorRef, SimpleChanges } from '@angular/core';
 import { RunnerStorageService, StoredRunner } from '../../services/runner-storage.service';
+
+interface RunnerAlert {
+  runnerName: string;
+  countdown: number;
+  isGo: boolean;
+  id: string;
+  runner: StoredRunner;
+}
 
 @Component({
   selector: 'app-runner-list',
   templateUrl: './runner-list.component.html',
   styleUrls: ['./runner-list.component.css']
 })
-export class RunnerListComponent implements OnInit, OnChanges {
+export class RunnerListComponent implements OnInit, OnChanges, OnDestroy {
   @Input() remainingTime: number = 0;
   @Input() countdownTime: number = 1800;
   @Input() checkIns: { number: number; time: string; remainingSeconds: number }[] = [];
@@ -15,17 +23,30 @@ export class RunnerListComponent implements OnInit, OnChanges {
   runners: StoredRunner[] = [];
   runnerName: string = '';
   expectedTime: string = '';
-  runnerAlerts: { runnerName: string; countdown: number; isGo: boolean; id: string }[] = [];
-  
+  runnerAlerts: RunnerAlert[] = [];
+
   gapValues: string[] = [];
-  editingCell: { index: number; field: 'name' | 'expectedTime' | 'racePosition' } | null = null;
+  editingCell: { runner: StoredRunner; field: 'name' | 'expectedTime' | 'racePosition' } | null = null;
   editingValue: string = '';
-  private alertIntervals: any[] = [];
-  
+  private alertTimeouts: any[] = [];
+  private lastAlertTick: number | null = null;
+
+  soundEnabled: boolean = true;
+  private audioCtx: AudioContext | null = null;
+  private readonly SOUND_KEY = 'harpenden_sound_enabled';
+
   showBulkImport: boolean = false;
   bulkRunnerData: string = '';
 
   constructor(private storageService: RunnerStorageService, private cdr: ChangeDetectorRef) {}
+
+  trackByRunner(index: number, runner: StoredRunner): StoredRunner {
+    return runner;
+  }
+
+  trackByCheckIn(index: number, checkIn: { number: number }): number {
+    return checkIn.number;
+  }
 
   addRunner(): void {
     const timeParts = this.expectedTime.split(':');
@@ -62,6 +83,19 @@ export class RunnerListComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     this.runners = this.storageService.loadRunners();
     this.sortRunners();
+    try {
+      this.soundEnabled = localStorage.getItem(this.SOUND_KEY) !== '0';
+    } catch {
+      this.soundEnabled = true;
+    }
+  }
+
+  toggleSound(): void {
+    this.soundEnabled = !this.soundEnabled;
+    try {
+      localStorage.setItem(this.SOUND_KEY, this.soundEnabled ? '1' : '0');
+    } catch { /* storage unavailable — preference just won't persist */ }
+    if (this.soundEnabled) this.ensureAudio();
   }
 
   private sortRunners(): void {
@@ -76,7 +110,7 @@ export class RunnerListComponent implements OnInit, OnChanges {
     this.computeGapValues();
   }
 
-  removeRunner(runner: any): void {
+  removeRunner(runner: StoredRunner): void {
     const index = this.runners.indexOf(runner);
     if (index >= 0) {
       this.runners.splice(index, 1);
@@ -85,14 +119,14 @@ export class RunnerListComponent implements OnInit, OnChanges {
     }
   }
 
-  startCellEdit(index: number, field: 'name' | 'expectedTime' | 'racePosition'): void {
-    this.editingCell = { index, field };
+  startCellEdit(runner: StoredRunner, field: 'name' | 'expectedTime' | 'racePosition'): void {
+    this.editingCell = { runner, field };
     if (field === 'name') {
-      this.editingValue = this.runners[index].name;
+      this.editingValue = runner.name;
     } else if (field === 'expectedTime') {
-      this.editingValue = this.formatTime(this.runners[index].expectedTime);
+      this.editingValue = this.formatTime(runner.expectedTime);
     } else if (field === 'racePosition') {
-      this.editingValue = this.runners[index].racePosition?.toString() ?? '';
+      this.editingValue = runner.racePosition?.toString() ?? '';
     }
     setTimeout(() => {
       const input = document.querySelector('.cell-edit-input') as HTMLInputElement;
@@ -102,11 +136,11 @@ export class RunnerListComponent implements OnInit, OnChanges {
 
   saveCellEdit(): void {
     if (!this.editingCell) return;
-    const { index, field } = this.editingCell;
+    const { runner, field } = this.editingCell;
 
     if (field === 'name') {
       if (this.editingValue.trim()) {
-        this.runners[index].name = this.editingValue.trim();
+        runner.name = this.editingValue.trim();
       }
     } else if (field === 'expectedTime') {
       const timeParts = this.editingValue.split(':');
@@ -115,14 +149,14 @@ export class RunnerListComponent implements OnInit, OnChanges {
         const seconds = parseInt(timeParts[1], 10);
         if (!isNaN(minutes) && !isNaN(seconds) && seconds <= 59) {
           const totalExpectedSeconds = minutes * 60 + seconds;
-          this.runners[index].expectedTime = totalExpectedSeconds;
-          this.runners[index].actualTime = this.countdownTime - totalExpectedSeconds;
+          runner.expectedTime = totalExpectedSeconds;
+          runner.actualTime = this.countdownTime - totalExpectedSeconds;
           this.sortRunners();
         }
       }
     } else if (field === 'racePosition') {
       const pos = parseInt(this.editingValue, 10);
-      this.runners[index].racePosition = isNaN(pos) ? undefined : pos;
+      runner.racePosition = isNaN(pos) ? undefined : pos;
       this.mapCheckInsToRunners();
       this.sortRunners();
     }
@@ -175,13 +209,18 @@ export class RunnerListComponent implements OnInit, OnChanges {
   }
 
   formatTime(seconds: number): string {
-    const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const sign = seconds < 0 ? '-' : '';
+    const abs = Math.abs(seconds);
+    const minutes = Math.floor(abs / 60);
+    const secs = abs % 60;
+    return `${sign}${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 
-  ngOnChanges(): void {
-    this.checkForAlerts();
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['remainingTime']) {
+      this.checkForAlerts();
+      this.updateActiveAlerts();
+    }
     this.mapCheckInsToRunners();
     this.sortRunners();
     this.computeGapValues();
@@ -212,52 +251,17 @@ export class RunnerListComponent implements OnInit, OnChanges {
     if (this.remainingTime >= this.countdownTime) return;
     this.runners.forEach(runner => {
       const currentCountdown = this.getCountdownToTime(runner.expectedTime);
-      
-      // Check if within 5 seconds of the alert time
-      if (currentCountdown <= 5 && currentCountdown >= 0) {
-        if (!runner.preAlerted) {
-          runner.preAlerted = true;
-          const alertId = `${runner.name}-${Date.now()}`;
-          
-          // Create the alert entry
-          const alertEntry = {
-            runnerName: runner.name,
-            countdown: Math.round(currentCountdown),
-            isGo: false,
-            id: alertId
-          };
-          
-          this.runnerAlerts.push(alertEntry);
-          
-          // Update countdown every 100ms
-          const updateInterval = setInterval(() => {
-            const updatedCountdown = this.getCountdownToTime(runner.expectedTime);
-            const alertIndex = this.runnerAlerts.findIndex(a => a.id === alertId);
-            
-            if (alertIndex >= 0) {
-              const roundedCountdown = Math.round(updatedCountdown);
-              if (roundedCountdown <= 0) {
-                this.runnerAlerts[alertIndex].isGo = true;
-                this.runnerAlerts[alertIndex].countdown = 0;
-                runner.alerted = true;
-                clearInterval(updateInterval);
-                
-                // Remove alert after 2 seconds
-                setTimeout(() => {
-                  const idx = this.runnerAlerts.findIndex(a => a.id === alertId);
-                  if (idx >= 0) {
-                    this.runnerAlerts.splice(idx, 1);
-                  }
-                }, 2000);
-              } else {
-                this.runnerAlerts[alertIndex].countdown = roundedCountdown;
-              }
-            } else {
-              clearInterval(updateInterval);
-            }
-          }, 100);
-          this.alertIntervals.push(updateInterval);
-        }
+
+      // Within 5 seconds of this runner's start time
+      if (currentCountdown <= 5 && currentCountdown >= 0 && !runner.preAlerted) {
+        runner.preAlerted = true;
+        this.runnerAlerts.push({
+          runnerName: runner.name,
+          countdown: currentCountdown,
+          isGo: false,
+          id: `${runner.name}-${Date.now()}`,
+          runner
+        });
       }
 
       // Reset flags if countdown goes back up (timer was reset)
@@ -268,10 +272,92 @@ export class RunnerListComponent implements OnInit, OnChanges {
     });
   }
 
+  /**
+   * Advance active alerts. Driven by remainingTime changes from the parent —
+   * alert countdowns derive from remainingTime, so polling timers add nothing.
+   */
+  private updateActiveAlerts(): void {
+    if (this.runnerAlerts.length === 0) return;
+    if (this.remainingTime === this.lastAlertTick) return;
+    this.lastAlertTick = this.remainingTime;
+
+    let anyTick = false;
+    let anyGo = false;
+    for (const alert of this.runnerAlerts) {
+      if (alert.isGo) continue;
+      const countdown = this.getCountdownToTime(alert.runner.expectedTime);
+      if (countdown <= 0) {
+        alert.isGo = true;
+        alert.countdown = 0;
+        alert.runner.alerted = true;
+        anyGo = true;
+        const id = alert.id;
+        this.alertTimeouts.push(setTimeout(() => {
+          const idx = this.runnerAlerts.findIndex(a => a.id === id);
+          if (idx >= 0) {
+            this.runnerAlerts.splice(idx, 1);
+            this.cdr.markForCheck();
+          }
+        }, 2000));
+      } else {
+        alert.countdown = countdown;
+        anyTick = true;
+      }
+    }
+
+    // One cue per second no matter how many runners share a start time
+    if (anyGo) {
+      this.playGoSound();
+    } else if (anyTick) {
+      this.playTickSound();
+    }
+  }
+
+  private ensureAudio(): AudioContext | null {
+    try {
+      if (!this.audioCtx) {
+        this.audioCtx = new AudioContext();
+      }
+      if (this.audioCtx.state === 'suspended') {
+        void this.audioCtx.resume();
+      }
+      return this.audioCtx;
+    } catch {
+      return null;
+    }
+  }
+
+  private playBeep(frequency: number, durationMs: number, volume: number): void {
+    if (!this.soundEnabled) return;
+    const ctx = this.ensureAudio();
+    if (!ctx) return;
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    oscillator.type = 'square';
+    oscillator.frequency.value = frequency;
+    const now = ctx.currentTime;
+    const duration = durationMs / 1000;
+    gain.gain.setValueAtTime(volume, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    oscillator.start(now);
+    oscillator.stop(now + duration);
+  }
+
+  private playTickSound(): void {
+    this.playBeep(880, 110, 0.2);
+  }
+
+  private playGoSound(): void {
+    this.playBeep(1320, 500, 0.3);
+  }
+
   resetRaceData(): void {
-    this.alertIntervals.forEach(i => clearInterval(i));
-    this.alertIntervals = [];
+    this.alertTimeouts.forEach(t => clearTimeout(t));
+    this.alertTimeouts = [];
     this.runnerAlerts = [];
+    this.lastAlertTick = null;
     this.runners.forEach(runner => {
       runner.racePosition = undefined;
       runner.finishTime = undefined;
@@ -281,6 +367,19 @@ export class RunnerListComponent implements OnInit, OnChanges {
     });
     this.sortRunners();
     this.storageService.saveRunners(this.runners);
+  }
+
+  hasRaceData(): boolean {
+    return this.runners.some(r => r.racePosition != null || r.finishTime != null);
+  }
+
+  ngOnDestroy(): void {
+    this.alertTimeouts.forEach(t => clearTimeout(t));
+    this.alertTimeouts = [];
+    if (this.audioCtx) {
+      void this.audioCtx.close().catch(() => {});
+      this.audioCtx = null;
+    }
   }
 
   updateTimesFromFinish(): void {

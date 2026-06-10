@@ -7,7 +7,9 @@ function createWindow() {
     height: 900,
     webPreferences: {
       nodeIntegration: false,
-      contextIsolation: true
+      contextIsolation: true,
+      // Keep timers full speed when the window is minimised or unfocused
+      backgroundThrottling: false
     },
     title: 'Race Timer'
   });

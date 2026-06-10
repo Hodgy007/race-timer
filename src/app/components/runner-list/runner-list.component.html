@@ -15,7 +15,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let checkIn of checkIns">
+          <tr *ngFor="let checkIn of checkIns; trackBy: trackByCheckIn">
             <td><span class="bib">{{ checkIn.number }}</span></td>
             <td>{{ checkIn.time }}</td>
             <td>{{ getCheckInRaceTime(checkIn) }}</td>
@@ -41,28 +41,28 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let runner of runners; let i = index">
-            <td class="editable-cell" (dblclick)="startCellEdit(i, 'name')">
-              <span *ngIf="!(editingCell?.index === i && editingCell?.field === 'name')">{{ runner.name }}</span>
-              <input *ngIf="editingCell?.index === i && editingCell?.field === 'name'"
+          <tr *ngFor="let runner of runners; let i = index; trackBy: trackByRunner">
+            <td class="editable-cell" (dblclick)="startCellEdit(runner, 'name')">
+              <span *ngIf="!(editingCell?.runner === runner && editingCell?.field === 'name')">{{ runner.name }}</span>
+              <input *ngIf="editingCell?.runner === runner && editingCell?.field === 'name'"
                      class="cell-edit-input" type="text" [(ngModel)]="editingValue"
                      (blur)="saveCellEdit()" (keydown.enter)="saveCellEdit()" (keydown.escape)="cancelCellEdit()" />
             </td>
-            <td class="editable-cell" (dblclick)="startCellEdit(i, 'expectedTime')">
-              <span *ngIf="!(editingCell?.index === i && editingCell?.field === 'expectedTime')">{{ formatTime(runner.expectedTime) }}</span>
-              <input *ngIf="editingCell?.index === i && editingCell?.field === 'expectedTime'"
+            <td class="editable-cell" (dblclick)="startCellEdit(runner, 'expectedTime')">
+              <span *ngIf="!(editingCell?.runner === runner && editingCell?.field === 'expectedTime')">{{ formatTime(runner.expectedTime) }}</span>
+              <input *ngIf="editingCell?.runner === runner && editingCell?.field === 'expectedTime'"
                      class="cell-edit-input" type="text" [(ngModel)]="editingValue" placeholder="mm:ss"
                      (blur)="saveCellEdit()" (keydown.enter)="saveCellEdit()" (keydown.escape)="cancelCellEdit()" />
             </td>
             <td class="col-gap">{{ gapValues[i] }}</td>
             <td>{{ formatTime(getCountdownToTime(runner.expectedTime)) }}</td>
-            <td class="editable-cell" (dblclick)="startCellEdit(i, 'racePosition')">
-              <ng-container *ngIf="!(editingCell?.index === i && editingCell?.field === 'racePosition')">
+            <td class="editable-cell" (dblclick)="startCellEdit(runner, 'racePosition')">
+              <ng-container *ngIf="!(editingCell?.runner === runner && editingCell?.field === 'racePosition')">
                 <span class="pos-badge" [class.top-3]="runner.racePosition && runner.racePosition <= 3">
                   {{ runner.racePosition ?? '—' }}
                 </span>
               </ng-container>
-              <input *ngIf="editingCell?.index === i && editingCell?.field === 'racePosition'"
+              <input *ngIf="editingCell?.runner === runner && editingCell?.field === 'racePosition'"
                      class="cell-edit-input" type="number" [(ngModel)]="editingValue" placeholder="#"
                      (blur)="saveCellEdit()" (keydown.enter)="saveCellEdit()" (keydown.escape)="cancelCellEdit()" />
             </td>
@@ -115,8 +115,16 @@
   </div>
 
   <!-- Alerts panel -->
-  <div class="alerts-panel">
-    <div class="alerts-panel-header">Live Alerts</div>
+  <div class="alerts-panel" aria-live="polite">
+    <div class="alerts-panel-header">
+      <span>Live Alerts</span>
+      <button type="button" class="sound-toggle" (click)="toggleSound()"
+              [class.muted]="!soundEnabled"
+              [attr.aria-label]="soundEnabled ? 'Mute countdown sounds' : 'Unmute countdown sounds'"
+              [title]="soundEnabled ? 'Sound on' : 'Sound off'">
+        {{ soundEnabled ? '🔊' : '🔇' }}
+      </button>
+    </div>
     <div *ngFor="let alert of runnerAlerts"
          class="alert-box"
          [ngClass]="alert.isGo ? 'green' : 'amber'">

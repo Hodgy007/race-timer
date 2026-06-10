@@ -1,17 +1,21 @@
-<div class="timer-container" [class.is-running]="isRunning">
+<div class="timer-container" [class.is-running]="isRunning" [attr.data-status]="status">
   <div class="timer-ring-wrap">
     <svg class="timer-arc" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
       <circle class="arc-track" cx="100" cy="100" r="88"/>
       <circle class="arc-fill" cx="100" cy="100" r="88"
         [attr.stroke-dashoffset]="arcOffset"/>
     </svg>
-    <div class="timer-display">{{ formatTime(countdownTime - remainingTime) }}</div>
+    <div class="timer-readout">
+      <div class="timer-status">{{ statusLabel }}</div>
+      <div class="timer-display">{{ formatTime(elapsedTime) }}</div>
+      <div class="timer-remaining">{{ remainingLabel }}</div>
+    </div>
   </div>
   <div class="button-group">
-    <button class="btn-start" (click)="startTimer()" [disabled]="isRunning">Start</button>
-    <button class="btn-stop"  (click)="stopTimer()">Stop</button>
+    <button class="btn-start" (click)="startTimer()" [disabled]="isRunning">{{ status === 'paused' ? 'Resume' : 'Start' }}</button>
+    <button class="btn-stop"  (click)="stopTimer()" [disabled]="!isRunning">Pause</button>
     <button class="btn-reset" (click)="resetTimer()">Reset</button>
-    <button class="btn-checkin" (click)="recordCheckIn()">Check&#8209;in</button>
+    <button class="btn-checkin" (click)="recordCheckIn()" [disabled]="!hasStarted">Check&#8209;in</button>
   </div>
   <app-runner-list [remainingTime]="remainingTime" [countdownTime]="countdownTime" [checkIns]="checkIns" (maxExpectedTimeChange)="onMaxExpectedTimeChange($event)"></app-runner-list>
 </div>
